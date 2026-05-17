@@ -120,24 +120,6 @@ def retriever_node(state: AgentState):
         print(f"Retrieval Error: {e}")
         return {"retrieved_docs": []}
 
-def evaluator_node(state: AgentState):
-    """AGENT 1 (Validator phase): Evaluates if the retrieved docs contain sufficient information."""
-    docs = state.get("retrieved_docs", [])
-    if not docs and state.get("retry_count", 0) < 1:
-        return {"evaluation_score": "FAIL"}
-        
-    try:
-        llm = get_llm()
-        doc_text = "\n".join([d["content"] for d in docs])
-        prompt = f"Does the following context contain sufficient information to answer this query?\nQuery: {state['query']}\nContext: {doc_text}\nAnswer 'YES' or 'NO'."
-        res = llm.invoke(prompt).content.strip().upper()
-        
-        if "NO" in res and state.get("retry_count", 0) < 1:
-            return {"evaluation_score": "FAIL"}
-        return {"evaluation_score": "PASS"}
-    except Exception:
-        return {"evaluation_score": "PASS"}
-
 def fallback_node(state: AgentState):
     """AGENT 4: The Recovery Specialist. Handles unanswerable queries gracefully."""
     if state.get("retry_count", 0) == 0:
@@ -246,15 +228,15 @@ def build_graph():
     workflow = StateGraph(AgentState)
     workflow.add_node("orchestrator", orchestrator_node)
     workflow.add_node("retriever", retriever_node)
-    workflow.add_node("evaluator", evaluator_node)
     workflow.add_node("fallback", fallback_node)
     workflow.add_node("generator", generator_node)
     
     workflow.set_entry_point("orchestrator")
     workflow.add_edge("orchestrator", "retriever")
-    workflow.add_edge("retriever", "evaluator")
     
-    workflow.add_conditional_edges("evaluator", lambda state: "fallback" if state.get("evaluation_score") == "FAIL" else "generator")
+    # Fast conditional edge: skip evaluator LLM, just check if we have docs
+    workflow.add_conditional_edges("retriever", lambda state: "fallback" if not state.get("retrieved_docs") else "generator")
+    
     workflow.add_edge("fallback", "retriever") 
     workflow.add_edge("generator", END)
     
