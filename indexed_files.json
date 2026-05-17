@@ -1,0 +1,290 @@
+{
+  "FinalDecks_ChryselysI&AOverview_20260121_v1.pptx": {
+    "filename": "FinalDecks_ChryselysI&AOverview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Chryselys Pharma Analytics Consulting Firm Overview",
+    "file_type": "pptx",
+    "pocs": "Jason Carlin, Paulomi Patel, Sanjeev Sardana, Satya Sridhar, Tokunbo Hiamang",
+    "summary": "This document provides an overview of Chryselys, a pharma data, analytics and AI consulting firm. It covers the company's core competencies, leadership team, customer base, security certifications, and key differentiators in delivering data-driven insights and high-impact transformations for pharmaceutical clients."
+  },
+  "CommercialAnalytics_AnomalyDetection_20260121_v1.pptx": {
+    "filename": "CommercialAnalytics_AnomalyDetection_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Commercial Analytics and Anomaly Detection",
+    "file_type": "pptx",
+    "pocs": "Vikas or Satya",
+    "summary": "This document outlines Chryselys' approach to commercial analytics and anomaly detection for pharma clients. It covers data validation, a data trustworthiness framework, intelligent anomaly detection methods, and a case study on applying these techniques for the client Stemline."
+  },
+  "CommercialAnalytics_DataStacking_20260121_v1.pptx": {
+    "filename": "CommercialAnalytics_DataStacking_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Data Stacking",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document discusses the data stacking approach used by Chryselys, a pharma analytics consulting firm, to link and integrate data from multiple sources such as claims data and EMR data. The goal is to create a unified view of the market by combining the strengths of individual data sources to improve data quality, coverage, and insights."
+  },
+  "CommercialAnalytics_DataStrategy_20260121_v1.pptx": {
+    "filename": "CommercialAnalytics_DataStrategy_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Data Strategy",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document outlines a data strategy framework for Chryselys to assess industry data sources capabilities and prepare a roadmap. The framework covers key steps such as identifying business problems, gathering requirements, evaluating data providers, validating data quality, and establishing a data stacking approach to address coverage gaps."
+  },
+  "CommercialAnalytics_HCPSegmentationTargeting_HCPLookAlike_20260121_v1.pptx": {
+    "filename": "CommercialAnalytics_HCPSegmentationTargeting_HCPLookAlike_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Commercial Analytics and HCP Segmentation",
+    "file_type": "pptx",
+    "pocs": "Vikas or Satya",
+    "summary": "The document outlines a project by Chryselys, a pharma analytics consulting firm, to develop a predictive model for identifying 'look-alike' HCP segments with high potential and willingness to use a therapy. The approach involves integrating primary market research (PMR) data on HCP attitudes and future usage with secondary claims data to create micro-segments and refresh the existing target list. The goal is to find low-hanging fruit to drive growth after a flat 3-quarter performance."
+  },
+  "CommercialAnalytics_MarketEvaluation&Opportunity_20260216_v1.pptx": {
+    "filename": "CommercialAnalytics_MarketEvaluation&Opportunity_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Market Evaluation and Opportunity Assessment",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document outlines a deep-dive analysis conducted by Chryselys to evaluate the ex-US market landscape and identify expansion opportunities for a pharma client. The analysis leveraged multi-source data integration and advanced analytics to provide actionable insights on regulatory frameworks, pricing policies, reimbursement landscapes, and priority markets for the client's expansion efforts."
+  },
+  "CommercialAnalytics_PatientJourney_Overview_20260121_v1.pptx": {
+    "filename": "CommercialAnalytics_PatientJourney_Overview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Patient Journey Analysis and Predictive Modeling",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document provides an overview of Chryselys' patient journey analysis and predictive modeling capabilities, including their work on predicting patient switching behavior, generating dynamic journey insights and visualizations, analyzing treatment pathways, and leveraging an integrated data ecosystem to deliver actionable insights and case study highlights."
+  },
+  "CommercialAnalytics_PromotionalEngagementCapability_20260121_v1.pptx": {
+    "filename": "CommercialAnalytics_PromotionalEngagementCapability_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Promotional Engagement Capability",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document outlines Chryselys' expertise in comprehensive evaluation of Promotional Program effectiveness within the pharmaceutical industry. It covers their approach to delivering actionable, data-driven insights that are integrated with ongoing field activities to enhance promotional outcomes and optimize overall program effectiveness."
+  },
+  "CI_AIVYCapability_20260121_v1.pptx": {
+    "filename": "CI_AIVYCapability_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Agentic AI and Generative AI Capabilities",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document provides an overview of Chryselys' Agentic AI platform, AIVY, and its key capabilities in the areas of market research, learning enhancement, knowledge graph building, customer sentiment analysis, and HCP engagement. It also highlights Chryselys' focus on ensuring model safety, reducing hallucinations, and maintaining data privacy and compliance."
+  },
+  "CI_CapabilityOverview_20260121_v1.pptx": {
+    "filename": "CI_CapabilityOverview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Competitive Intelligence & Monitoring",
+    "file_type": "pptx",
+    "pocs": "Kamakshi",
+    "summary": "This document provides an overview of Chryselys' capabilities in delivering comprehensive market assessments and competitive intelligence for the pharmaceutical industry. It covers key areas such as disease epidemiology, treatment landscapes, marketed and pipeline therapies, market sizing and opportunity analysis, and strategic decision-making support."
+  },
+  "CI_CongressAIVYOverview_20260216_v1.pptx": {
+    "filename": "CI_CongressAIVYOverview_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Competitive Intelligence for Pharma using AI-powered Analytics",
+    "file_type": "pptx",
+    "pocs": "Kamakshi",
+    "summary": "This document provides an overview of Chryselys' AIVY platform, an AI-powered competitive intelligence solution that can extract insights from ESMO congress data, including ePosters and abstracts. The platform uses a 4-step process to generate insights that can help pharma companies make better data-driven decisions. The document also discusses plans to extend AIVY's capabilities by incorporating additional data sources like Twitter and PubMed to provide a more comprehensive view of the competitive landscape in urothelial cancer treatment."
+  },
+  "CI_Newsletter_20260216_v1.pptx": {
+    "filename": "CI_Newsletter_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Competitive Intelligence (CI) Solutions for the Pharmaceutical Industry",
+    "file_type": "pptx",
+    "pocs": "Kamakshi",
+    "summary": "This document outlines Chryselys' approach to modernizing competitive intelligence (CI) for the pharmaceutical industry using technology-driven solutions. It highlights a 4-step process to automate and streamline CI tasks, improve efficiency, and deliver actionable insights to end-users. The document also discusses role-specific CI use cases, the engagement model, and the design of a user-friendly CI platform solution."
+  },
+  "CI_PrimaryMarketResearch_20260121_v1.pptx": {
+    "filename": "CI_PrimaryMarketResearch_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Primary Market Research in Pharma",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document provides an overview of the challenges and opportunities in leveraging primary market research (PMR) data in the pharma industry. It discusses the types of qualitative PMR methods, the complexity of unstructured data, and how Chryselys' agentic AI-enabled approach can synthesize insights. The document also showcases a case study on the impact of AI-driven PMR and how Chryselys used multi-modal generative AI to enhance market research learning across the organization."
+  },
+  "DataScience_KOLMapping_Overview_20260121_v1.pptx": {
+    "filename": "DataScience_KOLMapping_Overview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "KOL/DOL Identification and Mapping",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document provides an overview of Chryselys' KOL/DOL (Key Opinion Leader/Dominant Opinion Leader) identification and mapping framework. It covers the key components of the framework, including clinical and scientific scoring, AI-driven identification, network mapping, profiling and segmentation, and real-world application. The goal is to enable strategic scientific and clinical engagement with the most influential healthcare professionals."
+  },
+  "DataScience_TargetingKOLIndentificationHCPLookalikeSegmentation_20260121_v1.pptx": {
+    "filename": "DataScience_TargetingKOLIndentificationHCPLookalikeSegmentation_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Targeting and Segmentation for Key Opinion Leaders (KOLs) and Healthcare Professionals (HCPs)",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document outlines a comprehensive approach to HCP targeting and segmentation, leveraging a combination of business knowledge, advanced machine learning techniques, and integrated data sources to create robust HCP segments. It covers key steps such as HCP-HCO analysis, behavioral and attitudinal segmentation, and the use of look-alike modeling to enhance targeting and engagement strategies."
+  },
+  "DataScience_MarketingMixModeling_MethodologyOverview_20260121_v1.pptx": {
+    "filename": "DataScience_MarketingMixModeling_MethodologyOverview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Marketing Mix Modeling",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document provides an overview of the marketing mix modeling methodology used by Chryselys, a pharma analytics consulting firm. It covers the key business questions addressed, the promotional response framework, and the statistical analysis techniques employed to quantify the impact of various promotional activities on product sales and optimize marketing budgets."
+  },
+  "DataScience_NextBestAction_MethodologyOverview_20260121_v1.pptx": {
+    "filename": "DataScience_NextBestAction_MethodologyOverview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Next Best Action (NBA) Engine",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document provides an overview of Chryselys' Next Best Action (NBA) engine, a centralized platform that leverages advanced AI/ML techniques to optimize HCP engagement across various channels and content, with the goal of maximizing business impact."
+  },
+  "DataScience_PatientFinder_Overview_20260121_v1.pptx": {
+    "filename": "DataScience_PatientFinder_Overview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Patient Identification and Targeting",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document outlines a patient finder solution that leverages the patient journey, advanced machine learning models, and explainable AI techniques to identify and discover IgA Nephropathy (IgAN) patients. The approach involves feature engineering, longitudinal analysis, and the use of SHAP values to understand patient progression and clinical manifestations related to IgAN."
+  },
+  "FFE - GTM Framework v0.01.pptx": {
+    "filename": "FFE - GTM Framework v0.01.pptx",
+    "client": "Capability Decks",
+    "topic": "Go-To-Market (GTM) Framework for Field Force Strategy",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document outlines a structured, data-driven approach to building an impactful field force strategy for launch brands. It covers key areas such as customer segmentation, field force sizing and role design, territory optimization, and launch execution with continuous improvement."
+  },
+  "FFE_BrandSegmentation&Sizing_20260216_v1.pptx": {
+    "filename": "FFE_BrandSegmentation&Sizing_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Brand Segmentation and Sizing",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document outlines a project to revisit the segmentation, target high-potential HCPs, and optimize the field force for Brand X, a pharmaceutical product. The proposed approach involved reducing the field team size by 35% while achieving a 6% increase in market coverage through targeted resource allocation across key segments."
+  },
+  "FFE_IncentiveCompensationEnhancementOverview_20260216_v1.pptx": {
+    "filename": "FFE_IncentiveCompensationEnhancementOverview_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Incentive Compensation Optimization",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document outlines a comprehensive approach to optimizing incentive compensation (IC) processes through end-to-end automation, data integration, parallel processing, and interactive dashboards. The goal is to enhance efficiency, accuracy, and real-time insights to drive sales performance."
+  },
+  "FFE_LaunchReadinessProposal_20260216_v1.pptx": {
+    "filename": "FFE_LaunchReadinessProposal_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Launch Readiness Solution",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "The document outlines Chryselys' 'Initi8' launch readiness solution, which leverages AI/ML to support best-in-class launch success. It covers a comprehensive set of launch preparedness activities, including market assessment, strategy development, value proposition creation, launch project management, and post-launch tracking and modification. The solution aims to help commercial teams efficiently and effectively prepare for and execute successful product launches."
+  },
+  "FFE_MarketAssessmentandSizingProposal_20260216_v1.pptx": {
+    "filename": "FFE_MarketAssessmentandSizingProposal_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Market Assessment and Sizing",
+    "file_type": "pptx",
+    "pocs": "Unknown",
+    "summary": "This document provides a comprehensive market assessment and sizing proposal for a pharma analytics consulting firm, Chryselys. It covers the disease overview, current treatment landscape, competitor analysis, and a detailed market and pipeline analysis to understand future events impacting the product's peak shares and revenue forecasts."
+  },
+  "Forecasting_Agentic_20260121_v1.pptx": {
+    "filename": "Forecasting_Agentic_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Agentic Enabled Forecasting",
+    "file_type": "pptx",
+    "pocs": "Sekhar",
+    "summary": "This document outlines Chryselys' perspective on transforming traditional forecasting processes through their Agentic Enabled Forecasting solution. It highlights the current challenges in forecasting, the need for change, Chryselys' unique approach leveraging intelligent agents, and the key business outcomes enabled by this solution."
+  },
+  "Forecasting_BiosimilarLaunch_20260216_v1.pptx": {
+    "filename": "Forecasting_BiosimilarLaunch_20260216_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Forecasting and financial analysis for biosimilar product launch",
+    "file_type": "pptx",
+    "pocs": "Sekhar",
+    "summary": "This document presents a sales forecast and net present value (NPV) analysis for the launch of a biosimilar product in the Non-Small Cell Lung Cancer (NSCLC) segment. The analysis uncovered trends in biosimilar uptake, substitution rates, and physician adoption, enabling the client to align investment and rollout strategies with market demand and access dynamics. The competitive analysis, uptake benchmarking, and NPV analysis provided insights to support the client's strategic entry into the competitive oncology market as reference biologics neared patent expiry."
+  },
+  "Forecasting_CapabilityOverview_20260121_v1.pptx": {
+    "filename": "Forecasting_CapabilityOverview_20260121_v1.pptx",
+    "client": "Capability Decks",
+    "topic": "Forecasting Capabilities",
+    "file_type": "pptx",
+    "pocs": "Sekhar",
+    "summary": "This document provides an overview of Chryselys' forecasting capabilities, including their custom forecasting solutions, general forecasting approach, use of advanced data and modeling techniques, AI-driven forecasting methods, and various use cases and applications across the product lifecycle."
+  },
+  "Market Access Service Catalogue.pptx": {
+    "filename": "Market Access Service Catalogue.pptx",
+    "client": "Capability Decks",
+    "topic": "Market Access Consulting",
+    "file_type": "pptx",
+    "pocs": "Gaurav",
+    "summary": "This document outlines Chryselys' capabilities in market access consulting, focusing on strategies and processes to ensure patients can access the right therapies at the right price. It covers key industry challenges around patient access barriers, fragmented utilization management insights, access-utilization disconnect, contracting prioritization gap, and fragmented payer intelligence. Chryselys' solutions address these pain points through expert-led, tech-enabled services in areas like patient affordability insights, utilization management analytics, access pull-through analytics, payer landscape & contracting intelligence, and integrated payer & account intelligence."
+  },
+  "CONNEX Program Analysis v1.0.pptx": {
+    "filename": "CONNEX Program Analysis v1.0.pptx",
+    "client": "Client - Stemline (US)",
+    "topic": "CONNEX Program Analysis",
+    "file_type": "pptx",
+    "pocs": "Gaurav",
+    "summary": "The document presents an analysis of the CONNEX Program, a pharma analytics consulting initiative by Chryselys. It covers the program's reach, impact, and the relationship between HCP attendance and prescribing behavior for the drug ORSERDU. The analysis suggests that the CONNEX Program can complement field sales calls to improve the breadth of prescribing, though there is no direct correlation between program attendance and depth of prescribing."
+  },
+  "Stemline Orserdu CONNEX - Cumulative Attendees_06.05.24 v1.0.xlsb": {
+    "filename": "Stemline Orserdu CONNEX - Cumulative Attendees_06.05.24 v1.0.xlsb",
+    "client": "Client - Stemline (US)",
+    "topic": "Pharma Analytics Consulting",
+    "file_type": "xlsb",
+    "pocs": "Gaurav",
+    "summary": "This document appears to be an attendee list for the Connex Program, which is likely a pharma analytics consulting engagement or event hosted by Chryselys for their client Stemline. The document provides details on the attendees, including their names, practices, locations, and the program number they attended."
+  },
+  "Biolumina Support Data 2025.10.03 v2.xlsx": {
+    "filename": "Biolumina Support Data 2025.10.03 v2.xlsx",
+    "client": "Client - Stemline (US)",
+    "topic": "Biolumina Pharma Analytics",
+    "file_type": "xlsx",
+    "pocs": "Gaurav",
+    "summary": "This document provides detailed project intelligence on Biolumina's pharma analytics work, focusing on metastatic breast cancer patients, ESR1 mutation prevalence, and utilization of the drug Orserdu (ORS). It analyzes data from various sources like Guardant, Diaceutics, and IQVIA to derive key metrics around testing rates, patient populations, and treatment patterns."
+  },
+  "CDK 2L with New and Old Hcps v4.xlsx": {
+    "filename": "CDK 2L with New and Old Hcps v4.xlsx",
+    "client": "Client - Stemline (US)",
+    "topic": "CDK 2L Treatment Patterns",
+    "file_type": "xlsx",
+    "pocs": "Gaurav",
+    "summary": "This document analyzes patient-level data on the use of CDK4/6 inhibitor therapies, including abemaciclib, ribociclib, and palbociclib, in the second-line treatment of metastatic breast cancer. It examines treatment patterns, sequencing, and combination approaches with other therapies such as aromatase inhibitors and hormonal therapies."
+  },
+  "2025.08.07 Orserdu DoT Insights from Seat Orserdu v1 RG.xlsx": {
+    "filename": "2025.08.07 Orserdu DoT Insights from Seat Orserdu v1 RG.xlsx",
+    "client": "Client - Stemline (US)",
+    "topic": "Pharmaceutical Analytics",
+    "file_type": "xlsx",
+    "pocs": "Gaurav",
+    "summary": "This document provides insights on the persistence and duration of therapy (DOT) for two pharmaceutical drugs, Orserdu (ORS) and Tazverik (TQP), based on analysis of patient claims data. The analysis methodology is detailed, including how patient continuity, persistency, and DOT are calculated using NDC codes, product names, and grace periods. The analysis covers the time periods of February 2023 to July 2025 for ORS and December 2023 to April 2025 for TQP."
+  },
+  "Inluriyo Defense Strategy 2026.04.06 v1.xlsb": {
+    "filename": "Inluriyo Defense Strategy 2026.04.06 v1.xlsb",
+    "client": "Client - Stemline (US)",
+    "topic": "Competitive Defense Strategy for Metastatic Breast Cancer (mBC) Treatments",
+    "file_type": "xlsb",
+    "pocs": "Gaurav",
+    "summary": "The document outlines an analysis to assess the feasibility of a new competitive defense trigger for metastatic breast cancer (mBC) treatments. The goal is to identify and profile HCPs who may be at higher risk of competitive targeting based on their usage of oral hormonal therapies, Verzenio, and ORSERDU. The results will inform whether a new Veeva alert should be created to support proactive competitive defense."
+  },
+  "LA Wild Fire Impact on ORS business 20250305 v2.xlsx": {
+    "filename": "LA Wild Fire Impact on ORS business 20250305 v2.xlsx",
+    "client": "Client - Stemline (US)",
+    "topic": "Impact of LA Wildfire on Orserdu (Stemline) Business",
+    "file_type": "xlsx",
+    "pocs": "Gaurav",
+    "summary": "This document analyzes the impact of the LA wildfire on the sales of Orserdu (Stemline's product) across different territories. It compares the average sales 4 weeks before and after the wildfire, showing a decline in sales in California and other affected regions."
+  },
+  "ORS Growth Drivers 20251103 v3.pptx": {
+    "filename": "ORS Growth Drivers 20251103 v3.pptx",
+    "client": "Client - Stemline (US)",
+    "topic": "Orserdu Growth Opportunities",
+    "file_type": "pptx",
+    "pocs": "Gaurav",
+    "summary": "This document analyzes the growth drivers for the pharmaceutical product Orserdu, identifying key insights and strategic leverage points across channels, seasonality, account segmentation, promotional activity, territory performance, and payer dynamics. The analysis aims to guide the client in optimizing growth opportunities for the product."
+  },
+  "ORS Segment HCPs with Sales and Tests_Q4'24CTT 20240917.xlsb": {
+    "filename": "ORS Segment HCPs with Sales and Tests_Q4'24CTT 20240917.xlsb",
+    "client": "Client - Stemline (US)",
+    "topic": "Pharma Analytics and Sales Enablement",
+    "file_type": "xlsb",
+    "pocs": "Gaurav",
+    "summary": "This document provides a detailed analysis of Healthcare Providers (HCPs) segmented by their engagement with the Orserdu (Elzonris) product, including their sales and testing patterns. The analysis covers different HCP segments such as Loyalists, Emergents, Abandoners, Potential Adopters, and Uncharted Testers, providing insights into their respective sales and testing behaviors."
+  }
+}

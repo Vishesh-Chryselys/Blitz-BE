@@ -1,4 +1,5 @@
 import os
+import time
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from services.llm import get_embeddings
@@ -21,13 +22,33 @@ def init_pinecone():
         )
     return pc
 
-def get_vectorstore():
+def get_vectorstore(namespace: str = "default"):
     # Ensure index exists
     init_pinecone()
     embeddings = get_embeddings()
-    return PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
+    return PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings, namespace=namespace)
 
-def upsert_documents(documents: List[Document]):
-    vectorstore = get_vectorstore()
-    vectorstore.add_documents(documents)
-    print(f"Upserted {len(documents)} document chunks to Pinecone.")
+import time
+
+def upsert_documents(documents: List[Document], namespace: str = "default"):
+    vectorstore = get_vectorstore(namespace=namespace)
+    batch_size = 100
+    total = len(documents)
+    print(f"Upserting {total} document chunks to Pinecone in namespace '{namespace}' using batch size {batch_size}...")
+    
+    for i in range(0, total, batch_size):
+        batch = documents[i:i + batch_size]
+        print(f"  -> Upserting batch {i//batch_size + 1}/{(total + batch_size - 1)//batch_size} (chunks {i} to {min(i + batch_size, total)})...")
+        try:
+            vectorstore.add_documents(batch)
+            print(f"  [OK] Batch {i//batch_size + 1} upserted successfully.")
+        except Exception as e:
+            print(f"  [RETRY] Batch {i//batch_size + 1} failed: {e}. Retrying in 5 seconds...")
+            time.sleep(5)
+            vectorstore.add_documents(batch)
+            print(f"  [OK] Batch {i//batch_size + 1} upserted successfully after retry.")
+        
+        # Gentle rate-limiting between Bedrock embedding calls
+        time.sleep(0.5)
+        
+    print(f"Upserted all {total} document chunks to Pinecone inside namespace: {namespace}.")

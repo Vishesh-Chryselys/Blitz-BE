@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Upload, FileText, CheckCircle2, Loader2, Sparkles, Layers, Database, Zap, 
   AlertCircle, Share2, FolderKanban, ShieldCheck, Plus, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { triggerIngestion } from "../lib/api";
+import { triggerIngestion, fetchIndexedFiles, type IndexedFile } from "../lib/api";
 
 export const Route = createFileRoute("/dashboard/upload")({
   component: UploadPage,
@@ -34,58 +34,42 @@ function UploadPage() {
   const [spStatus, setSpStatus] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [spConnected, setSpConnected] = useState(false);
 
-  const [activeIngestions, setActiveIngestions] = useState([
-    { name: "SharePoint Drive: /sites/SalesEnablement/Proposals", type: "SharePoint", stage: "Done", progress: 100, files: 12 },
-    { name: "Local Server Folder: /Data", type: "Directory", stage: "Done", progress: 100, files: 14 },
-    { name: "Q3_Oncology_Forecast.pptx", type: "File", stage: "Done", progress: 100, files: 1 },
-    { name: "Northwind_Lab_Outcomes.pdf", type: "File", stage: "Done", progress: 100, files: 1 },
-  ]);
+  const [indexedFiles, setIndexedFiles] = useState<IndexedFile[]>([]);
+  const [isFetchingFiles, setIsFetchingFiles] = useState(false);
+
+  const fetchFiles = async () => {
+    setIsFetchingFiles(true);
+    try {
+      const res = await fetchIndexedFiles();
+      setIndexedFiles(res.files || []);
+    } catch (err) {
+      console.error("Failed to fetch indexed files:", err);
+    } finally {
+      setIsFetchingFiles(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFiles();
+  }, []);
 
   const handleIngestion = async () => {
     setIsLoading(true);
     setStatus({ type: "info", message: `Triggering ingestion pipeline for folder '${folderPath}'...` });
     
     try {
-      const res = await triggerIngestion(folderPath);
+      // Always ingest documents into the shared knowledge base namespace
+      // NOT the personal session namespace — that's for chat memory only
+      const res = await triggerIngestion(folderPath, "knowledge_base");
       
       setStatus({ 
         type: "success", 
-        message: `Successfully triggered! Ingested raw files into Pinecone database.` 
+        message: `Successfully triggered! Background ingestion job started for folder /${folderPath}.` 
       });
 
-      const newIngest = {
-        name: `Local Folder: /${folderPath}`,
-        type: "Directory",
-        stage: "Processing",
-        progress: 10,
-        files: 6
-      };
-
-      setActiveIngestions(prev => [newIngest, ...prev]);
-
-      let currentProgress = 10;
-      const interval = setInterval(() => {
-        currentProgress += 20;
-        if (currentProgress >= 100) {
-          currentProgress = 100;
-          clearInterval(interval);
-          setActiveIngestions(prev => 
-            prev.map(item => 
-              item.name === newIngest.name 
-                ? { ...item, progress: 100, stage: "Done" } 
-                : item
-            )
-          );
-        } else {
-          setActiveIngestions(prev => 
-            prev.map(item => 
-              item.name === newIngest.name 
-                ? { ...item, progress: currentProgress, stage: currentProgress > 60 ? "Embedding" : currentProgress > 30 ? "Chunking" : "Parsing" } 
-                : item
-            )
-          );
-        }
-      }, 2000);
+      // Fetch updates shortly after to reflect new files
+      setTimeout(fetchFiles, 3000);
+      setTimeout(fetchFiles, 8000);
 
     } catch (err: any) {
       console.error(err);
@@ -110,6 +94,8 @@ function UploadPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setSpConnected(true);
+      localStorage.setItem("connected_sharepoint_url", spUrl);
+      localStorage.setItem("connected_sharepoint_library", spLibrary);
       setSpStatus({ 
         type: "success", 
         message: "MS SharePoint Handshake complete! Connected successfully under secure tenant ID 'chryselys-prod-9a7'. Connected to library: 'Proposals'." 
@@ -356,42 +342,51 @@ function UploadPage() {
         </div>
 
         {/* Right Side: Active Index Metadata Status */}
-        <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-          <div className="text-[10px] tracking-widest text-gold uppercase font-bold border-b border-border/50 pb-2">
-            Active Data Sources
+        <div className="bg-card border border-border rounded-2xl p-5 space-y-4 flex flex-col h-[600px]">
+          <div className="flex items-center justify-between border-b border-border/50 pb-2 shrink-0">
+            <div className="text-[10px] tracking-widest text-gold uppercase font-bold">
+              Active Data Sources in Pinecone
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={fetchFiles} 
+              disabled={isFetchingFiles} 
+              className="h-6 text-[10px] px-2 text-foreground/50 hover:text-gold"
+            >
+              {isFetchingFiles ? <Loader2 className="size-3 animate-spin" /> : "Refresh"}
+            </Button>
           </div>
           
-          <div className="space-y-3">
-            {activeIngestions.map((item, idx) => (
-              <div key={idx} className="p-3 bg-secondary/35 rounded-xl border border-border/60 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 truncate">
-                    {item.type === "SharePoint" ? (
-                      <Share2 className="size-4 text-gold shrink-0" />
-                    ) : (
-                      <FileText className="size-4 text-gold shrink-0" />
-                    )}
-                    <span className="text-xs font-semibold text-warm truncate" title={item.name}>{item.name}</span>
+          <div className="space-y-3 overflow-y-auto pr-2 flex-1 custom-scrollbar">
+            {indexedFiles.length === 0 && !isFetchingFiles && (
+              <div className="text-sm text-foreground/50 text-center py-10 flex flex-col items-center gap-3">
+                <Database className="size-8 opacity-20" />
+                <p>No files currently indexed.<br/>Trigger ingestion to add data.</p>
+              </div>
+            )}
+            {indexedFiles.map((file, idx) => (
+              <div key={idx} className="p-3 bg-secondary/35 rounded-xl border border-border/60 space-y-2 shrink-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <FileText className="size-4 text-gold shrink-0 mt-0.5" />
+                    <span className="text-xs font-semibold text-warm break-all line-clamp-2" title={file.filename}>{file.filename}</span>
                   </div>
-                  {item.stage === "Done" ? (
-                    <CheckCircle2 className="size-4 text-gold shrink-0" />
-                  ) : (
-                    <Loader2 className="size-4 text-gold animate-spin shrink-0" />
-                  )}
+                  <CheckCircle2 className="size-4 text-gold shrink-0 mt-0.5" />
                 </div>
                 
-                <div className="flex items-center justify-between text-[10px] text-foreground/50">
-                  <span>Type: <strong className="text-warm font-medium">{item.type}</strong></span>
-                  <span>{item.files} files indexed</span>
-                </div>
-
-                <div className="h-1 bg-black/[0.06] rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-gradient-gold" 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${item.progress}%` }} 
-                    transition={{ duration: 1 }}
-                  />
+                <div className="flex flex-col gap-1.5 text-[10px] text-foreground/60 bg-background/50 rounded-lg p-2 border border-border/40">
+                   <div className="grid grid-cols-2 gap-2">
+                     <div className="truncate" title={file.client}>
+                        <span className="opacity-70">Client:</span> <span className="text-warm font-medium">{file.client}</span>
+                     </div>
+                     <div className="truncate" title={file.topic}>
+                        <span className="opacity-70">Topic:</span> <span className="text-warm font-medium">{file.topic}</span>
+                     </div>
+                   </div>
+                   <div className="truncate border-t border-border/40 pt-1 mt-0.5" title={file.pocs}>
+                     <span className="opacity-70">POCs:</span> <span className="text-warm font-medium">{file.pocs}</span>
+                   </div>
                 </div>
               </div>
             ))}

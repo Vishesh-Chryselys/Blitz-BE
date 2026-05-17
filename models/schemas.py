@@ -17,3 +17,4 @@ class ChatResponse(BaseModel):
 
 class IngestionRequest(BaseModel):
     folder_path: str = "Data"
+    namespace: Optional[str] = "default"

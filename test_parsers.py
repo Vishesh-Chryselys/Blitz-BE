@@ -1,5 +1,9 @@
 from services.document_parser import parse_document
 import os
+import sys
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 data_dir = "Data"
 if not os.path.exists(data_dir):
@@ -13,7 +17,7 @@ else:
             
             text_preview = result.get('text', '')[:200]
             if text_preview:
-                print(f"✅ Success! Extracted {len(result.get('text', ''))} characters.")
+                print(f"[SUCCESS] Extracted {len(result.get('text', ''))} characters.")
                 print(f"Preview: {text_preview.replace(chr(10), ' ')}...\n")
             else:
-                print("❌ Failed to extract text or file is empty.\n")
+                print("[FAILED] to extract text or file is empty.\n")

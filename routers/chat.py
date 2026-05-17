@@ -15,16 +15,19 @@ def format_references(docs):
         meta = doc.get("metadata", {})
         source = meta.get("source", "Unknown file")
         
-        if source not in seen_sources:
-            seen_sources.add(source)
-            references.append(
-                DocumentReference(
-                    file_name=source,
-                    url=f"/files/{source}",
-                    summary=meta.get("summary", "No summary available"),
-                    metadata=meta
-                )
+        # Deduplicate: skip if we have already added this filename
+        if source in seen_sources:
+            continue
+        seen_sources.add(source)
+        
+        references.append(
+            DocumentReference(
+                file_name=meta.get("client_name", "N/A") + " | " + source if meta.get("client_name") else source,
+                url=f"/files/{source}",
+                summary=meta.get("summary", "No summary available"),
+                metadata=meta
             )
+        )
     return references
 
 @router.post("/", response_model=ChatResponse)

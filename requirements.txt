@@ -9,6 +9,7 @@ python-pptx
 PyMuPDF
 pandas
 openpyxl
+pyxlsb
 python-multipart
 python-dotenv
 langchain-pinecone

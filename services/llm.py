@@ -18,29 +18,36 @@ def get_embeddings():
     )
 
 def extract_metadata_from_text(text: str, filename: str) -> Dict[str, Any]:
-    """Uses LLM to extract smart metadata from the document text."""
+    """Uses LLM to extract structured project intelligence metadata from the document text."""
     llm = get_llm()
     prompt = PromptTemplate.from_template(
-        """You are an expert sales enablement AI. 
-        Analyze the following document content (Filename: {filename}) and extract key metadata.
+        """You are an expert sales enablement AI for Chryselys, a pharma analytics consulting firm.
+        Analyze the following document content (Filename: {filename}) and extract structured project intelligence metadata.
         Provide the output strictly as a JSON object with the following keys:
-        - topic: (string) The main topic of the document
+        - topic: (string) The main topic or capability area of the document
         - subtopics: (list of strings) Key subtopics covered
         - summary: (string) A concise 2-3 sentence summary of the document
-        - created_by: (string) Attempt to infer the author/owner, or "Unknown" if not found
+        - client_project: (string) The pharma client this project was done for (e.g., "Stemline", "Pfizer"). Write "Internal" if it is a Chryselys internal capability document.
+        - brand: (string) The drug/product brand name if mentioned (e.g., "Elzonris", "Nemplera"), else "N/A"
+        - pocs: (string) Names of Point of Contacts or authors mentioned in the document, else "Unknown"
+        - business_objective: (string) What was the core business problem or objective this work addressed?
+        - approach: (string) What analytical or strategic approach/methodology was used?
+        - datasets_used: (string) What data sources or datasets were referenced or used?
+        - key_outcome: (string) What were the key results, outputs, or outcomes delivered?
+        - case_study: (string) Is there a case study or success story referenced? If yes, describe briefly. Else "None"
+        - timeline_pricing: (string) Any mention of timeline, project duration, or pricing. Else "Not mentioned"
+        - created_by: (string) Attempt to infer the author/owner from the document, or "Unknown" if not found
         
-        Document Content (first 2000 chars):
+        Document Content (first 3000 chars):
         {text}
         
         JSON Output:"""
     )
     
-    # We truncate text to avoid token limits for metadata extraction
     chain = prompt | llm
     try:
-        response = chain.invoke({"filename": filename, "text": text[:2000]})
+        response = chain.invoke({"filename": filename, "text": text[:3000]})
         content = response.content
-        # Basic JSON cleaning
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()
         elif "```" in content:
@@ -54,5 +61,15 @@ def extract_metadata_from_text(text: str, filename: str) -> Dict[str, Any]:
             "topic": "General",
             "subtopics": [],
             "summary": "No summary available.",
+            "client_project": "Unknown",
+            "brand": "N/A",
+            "pocs": "Unknown",
+            "business_objective": "Not extracted",
+            "approach": "Not extracted",
+            "datasets_used": "Not extracted",
+            "key_outcome": "Not extracted",
+            "case_study": "None",
+            "timeline_pricing": "Not mentioned",
             "created_by": "Unknown"
         }
+

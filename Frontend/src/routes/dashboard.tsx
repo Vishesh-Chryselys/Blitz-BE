@@ -26,9 +26,26 @@ function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Onboarding state
-  const [userName, setUserName] = useState(() => localStorage.getItem("chryselys_name") || "");
-  const [userChryselysId, setUserChryselysId] = useState(() => localStorage.getItem("chryselys_id") || "");
-  const [showOnboarding, setShowOnboarding] = useState(!userName || !userChryselysId);
+  const [userName, setUserName] = useState(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      return localStorage.getItem("chryselys_name") || "";
+    }
+    return "";
+  });
+  const [userChryselysId, setUserChryselysId] = useState(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      return localStorage.getItem("chryselys_id") || "";
+    }
+    return "";
+  });
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const name = localStorage.getItem("chryselys_name");
+      const cid = localStorage.getItem("chryselys_id");
+      return !name || !cid;
+    }
+    return true;
+  });
   
   const [nameInput, setNameInput] = useState("");
   const [idInput, setIdInput] = useState("");

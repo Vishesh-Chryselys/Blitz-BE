@@ -1,0 +1,26 @@
+{
+    "C1111": {
+        "user_id": "C1111",
+        "first_seen": "2026-05-17T18:08:00Z",
+        "pinecone_namespace": "session_C1111",
+        "last_query": "what do you know about Stemline client"
+    },
+    "TEST_123": {
+        "user_id": "TEST_123",
+        "first_seen": "2026-05-17T18:08:00Z",
+        "pinecone_namespace": "session_TEST_123",
+        "last_query": "what information do you have on stemline"
+    },
+    "C111": {
+        "user_id": "C111",
+        "first_seen": "2026-05-17T18:08:00Z",
+        "pinecone_namespace": "session_C111",
+        "last_query": "i have a project where i have to create proposal on patient finder with KOL Mapping. do we have anything related to this?"
+    },
+    "C1225": {
+        "user_id": "C1225",
+        "first_seen": "2026-05-17T18:08:00Z",
+        "pinecone_namespace": "session_C1225",
+        "last_query": "what do you know about stemline"
+    }
+}

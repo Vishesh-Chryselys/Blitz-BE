@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Sparkles, Send, FileText, ArrowRight, ShieldCheck, Zap, Paperclip, Loader2, X, Clock, HelpCircle, Folder
@@ -27,17 +27,29 @@ type Msg = {
 };
 
 function Workspace() {
-  const userName = localStorage.getItem("chryselys_name") || "Marcus";
-  const userChryselysId = localStorage.getItem("chryselys_id") || "default";
+  const userName = typeof window !== "undefined" && window.localStorage ? localStorage.getItem("chryselys_name") || "Marcus" : "Marcus";
+  const userChryselysId = typeof window !== "undefined" && window.localStorage ? localStorage.getItem("chryselys_id") || "default" : "default";
 
-  // Initial welcome message (Warm, business-friendly greeting)
-  const [msgs, setMsgs] = useState<Msg[]>(() => [
-    {
-      role: "ai",
-      content: `Welcome ${userName}! I am BLITZ, your secure enterprise intelligence partner. I can instantly analyze your Statement of Work (SOW) briefs, query our curated capabilities repository, synthesize key business metrics, and help you compile client-ready presentation materials. How can I support your project enablement today?`,
-      cards: []
+  // Initial welcome message (Warm, business-friendly greeting) - Now persisted via sessionStorage
+  const [msgs, setMsgs] = useState<Msg[]>(() => {
+    try {
+      const stored = sessionStorage.getItem(`chryselys_chat_${userChryselysId}`);
+      if (stored) return JSON.parse(stored);
+    } catch (e) {
+      console.error("Failed to parse stored chat:", e);
     }
-  ]);
+    return [
+      {
+        role: "ai",
+        content: `Welcome ${userName}! I am BLITZ, your secure enterprise intelligence partner. I can instantly analyze your Statement of Work (SOW) briefs, query our curated capabilities repository, synthesize key business metrics, and help you compile client-ready presentation materials. How can I support your project enablement today?`,
+        cards: []
+      }
+    ];
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem(`chryselys_chat_${userChryselysId}`, JSON.stringify(msgs));
+  }, [msgs, userChryselysId]);
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +74,41 @@ function Workspace() {
     const sanitizedId = userChryselysId.replace(/[^a-zA-Z0-9_-]/g, "");
     return `session_${sanitizedId}`;
   });
+  
+  const [sidebarWidth, setSidebarWidth] = useState(260);
+  const isDragging = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDragging.current) return;
+      const deltaX = startX - moveEvent.clientX;
+      const newWidth = startWidth + deltaX;
+      
+      // Boundaries: min 200px, max 550px
+      if (newWidth >= 200 && newWidth <= 550) {
+        setSidebarWidth(newWidth);
+      }
+    };
+    
+    const handleMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+    
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -180,34 +227,53 @@ function Workspace() {
     setInput(query);
   };
 
-  // Helper function to parse raw text and replace serial markers like [Doc X] with live folder/SharePoint link badges
+  // Helper function to parse raw text and replace bold tags and citation badges
   const renderContentWithLinks = (text: string, cards: any[]) => {
-    if (!cards || cards.length === 0) return <span>{text}</span>;
+    // Helper to parse simple **bold** markdown tags inside text segments
+    const parseBold = (str: string) => {
+      const parts = str.split(/\*\*(.*?)\*\*/g);
+      return parts.map((part, index) => {
+        if (index % 2 === 1) {
+          return (
+            <strong key={index} className="font-bold text-gold tracking-wide">
+              {part}
+            </strong>
+          );
+        }
+        return part;
+      });
+    };
 
     // Matches [Doc X], [DocX], [doc X]
     const regex = /\[Doc\s*(\d+)\]/gi;
-    const parts = [];
+    const parts: any[] = [];
     let lastIndex = 0;
     let match;
 
     while ((match = regex.exec(text)) !== null) {
       const matchIndex = match.index;
-      // Add plain text before match
+      // Add plain text (with bold formatting) before match
       if (matchIndex > lastIndex) {
-        parts.push(text.substring(lastIndex, matchIndex));
+        const segment = text.substring(lastIndex, matchIndex);
+        parts.push(...parseBold(segment));
       }
 
       const docNumber = parseInt(match[1], 10);
-      const card = cards[docNumber - 1]; // 1-indexed citations
+      const card = cards ? cards[docNumber - 1] : null; // 1-indexed citations
 
       if (card) {
         const isSharePoint = card.title.toLowerCase().includes("sharepoint") || card.title.toLowerCase().includes("sites");
-        // Local folder opens standard workspace directory; SharePoint opens simulated OneDrive SharePoint portal
+        // Read dynamically connected SharePoint details from localStorage with window guards for SSR
+        const savedSpUrl = typeof window !== "undefined" ? localStorage.getItem("connected_sharepoint_url") : null;
+        const savedSpLibrary = typeof window !== "undefined" ? (localStorage.getItem("connected_sharepoint_library") || "Proposals") : "Proposals";
+        const spBase = savedSpUrl ? `${savedSpUrl}/${savedSpLibrary}` : "https://chryselys.sharepoint.com/sites/SalesEnablement/Proposals";
+
+        // Local folder opens standard workspace directory; SharePoint opens dynamic OneDrive SharePoint portal
         const targetLink = isSharePoint 
-          ? "https://chryselys.sharepoint.com/sites/SalesEnablement/Proposals"
+          ? spBase
           : "file:///C:/Users/ShriyansJain/OneDrive%20-%20Chryselys Services Private Limited/Desktop/Blitz/Data/";
 
-        parts.push(
+         parts.push(
           <a
             key={matchIndex}
             href={targetLink}
@@ -217,19 +283,20 @@ function Workspace() {
             title={isSharePoint ? `Open SharePoint Document Library` : `Open Local Server Folder: ${card.title}`}
           >
             <Folder className="size-3 text-gold shrink-0 group-hover:scale-110 transition-transform" />
-            <span className="underline decoration-dotted">{card.title}</span>
+            <span className="underline decoration-dotted">{`[Doc ${docNumber}]`}</span>
           </a>
         );
       } else {
-        // Fallback to original text if out of range
-        parts.push(match[0]);
+        // Fallback to original text with bold processing if card is missing
+        parts.push(...parseBold(match[0]));
       }
 
       lastIndex = regex.lastIndex;
     }
 
     if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
+      const segment = text.substring(lastIndex);
+      parts.push(...parseBold(segment));
     }
 
     return <span>{parts.map((p, idx) => <span key={idx}>{p}</span>)}</span>;
@@ -239,7 +306,10 @@ function Workspace() {
   const showMetadataInspector = activeInspectedMsg && activeInspectedMsg.role === "ai" && !activeInspectedMsg.isError;
 
   return (
-    <div className="grid lg:grid-cols-[1fr_360px] gap-6 max-w-[1500px] h-[calc(100vh-10rem)]">
+    <div 
+      className="grid gap-4 max-w-full w-full h-[calc(100vh-7rem)] pr-4"
+      style={{ gridTemplateColumns: `1fr auto ${sidebarWidth}px` }}
+    >
       {/* Interactive Chat Window */}
       <div className="bg-card border border-border rounded-2xl flex flex-col overflow-hidden">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card-header/40">
@@ -391,6 +461,15 @@ function Workspace() {
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Dynamic Draggable Divider */}
+      <div 
+        className="w-1.5 h-full cursor-col-resize hover:bg-gold/45 active:bg-gold/80 transition-colors flex items-center justify-center shrink-0 self-stretch group relative rounded mx-0.5"
+        onMouseDown={handleMouseDown}
+        title="Drag to resize panels"
+      >
+        <div className="w-[1.5px] h-10 bg-border/60 group-hover:bg-gold/60 rounded" />
       </div>
 
       {/* Right Sidebar Window Workspace */}
