@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+boto3
+langchain
+langchain-aws
+langgraph
+pinecone-client
+python-pptx
+PyMuPDF
+pandas
+openpyxl
+python-multipart
+python-dotenv
+langchain-pinecone
+python-docx
+langchain-text-splitters
