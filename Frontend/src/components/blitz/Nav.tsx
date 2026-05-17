@@ -21,7 +21,7 @@ export function Nav() {
               <Link
                 key={i.label}
                 to={i.to}
-                className="px-3.5 py-1.5 rounded-full hover:text-warm hover:bg-white/5 transition-colors"
+                className="px-3.5 py-1.5 rounded-full hover:text-warm hover:bg-black/5 transition-colors"
               >
                 {i.label}
               </Link>

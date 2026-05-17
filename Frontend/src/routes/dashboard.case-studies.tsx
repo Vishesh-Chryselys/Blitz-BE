@@ -41,8 +41,8 @@ function CaseStudies() {
                 Auto-synthesized from 8 decks, 14 datasets, and 3 SME interviews — every claim provenance-linked.
               </p>
               <div className="flex flex-wrap gap-2 mb-5">
-                <span className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-foreground/80">{c.client}</span>
-                <span className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-foreground/80">{c.capability}</span>
+                <span className="text-xs px-3 py-1 rounded-full bg-black/5 border border-black/10 text-foreground/80">{c.client}</span>
+                <span className="text-xs px-3 py-1 rounded-full bg-black/5 border border-black/10 text-foreground/80">{c.capability}</span>
                 <span className="text-xs px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold flex items-center gap-1"><ShieldCheck className="size-3" /> Verified</span>
               </div>
               <Button variant="hero">Open <ArrowRight /></Button>

@@ -75,7 +75,7 @@ function Analytics() {
                     <span className="text-foreground/80">{topic}</span>
                     <span className="text-gold">{n}</span>
                   </div>
-                  <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-black/[0.08] rounded-full overflow-hidden">
                     <motion.div className="h-full bg-gradient-gold rounded-full"
                       initial={{ width: 0 }} animate={{ width: `${w}%` }} transition={{ duration: 1 }} />
                   </div>
@@ -120,7 +120,7 @@ function Analytics() {
                   <span className="text-warm">{team}</span>
                   <span className="text-gold font-display">{pct}%</span>
                 </div>
-                <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                <div className="h-2 bg-black/[0.08] rounded-full overflow-hidden">
                   <motion.div className="h-full bg-gradient-gold rounded-full"
                     initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1 }} />
                 </div>

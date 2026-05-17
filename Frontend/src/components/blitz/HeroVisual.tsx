@@ -109,7 +109,7 @@ export function HeroVisual() {
             )}
             <circle
               cx={n.x} cy={n.y} r={n.r}
-              fill={n.core ? "url(#coreG)" : "oklch(0.32 0.06 200)"}
+              fill={n.core ? "url(#coreG)" : "oklch(0.95 0.04 88)"}
               stroke={n.core ? "oklch(0.95 0.08 88)" : "oklch(0.81 0.14 82 / 0.6)"}
               strokeWidth="0.2"
               filter="url(#glow)"
@@ -118,7 +118,7 @@ export function HeroVisual() {
               x={n.x} y={n.y + n.r + 2.5}
               textAnchor="middle"
               fontSize="1.6"
-              fill={n.core ? "oklch(0.95 0.08 88)" : "oklch(0.85 0.02 85 / 0.8)"}
+              fill={n.core ? "oklch(0.20 0.03 80)" : "oklch(0.30 0.04 80 / 0.85)"}
               fontFamily="Inter, sans-serif"
               letterSpacing="0.05em"
             >{n.label}</text>
@@ -138,7 +138,7 @@ export function HeroVisual() {
       <FloatCard className="right-[4%] top-[8%]" delay={1.2}>
         <div className="text-[10px] text-gold/80 tracking-widest mb-1">SYNTHESIS</div>
         <div className="text-xs text-warm font-medium">Patient Adherence Case</div>
-        <div className="mt-2 h-1 w-full rounded-full bg-white/10 overflow-hidden">
+        <div className="mt-2 h-1 w-full rounded-full bg-black/10 overflow-hidden">
           <motion.div className="h-full bg-gradient-gold" initial={{ width: 0 }} animate={{ width: "82%" }} transition={{ duration: 2, delay: 1.5 }} />
         </div>
       </FloatCard>

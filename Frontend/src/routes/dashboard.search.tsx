@@ -83,7 +83,7 @@ function SearchPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap gap-1.5">
                   {r.tags.map((t) => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-foreground/70">{t}</span>
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 border border-black/10 text-foreground/70">{t}</span>
                   ))}
                 </div>
                 <span className="text-[10px] tracking-widest text-gold uppercase border border-gold/30 rounded-full px-2 py-0.5">{r.badge}</span>
