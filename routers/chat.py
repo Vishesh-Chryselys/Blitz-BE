@@ -26,7 +26,10 @@ def format_references(docs):
                 file_name=meta.get("client_name", "N/A") + " | " + source if meta.get("client_name") else source,
                 url=f"/files/{source}",
                 summary=meta.get("summary", "No summary available"),
-                metadata=meta
+                metadata={
+                    **meta,
+                    "match_strength": round(float(meta.get("relevance_score", 0)), 2),
+                }
             )
         )
     return references

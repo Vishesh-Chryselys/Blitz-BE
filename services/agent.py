@@ -72,6 +72,76 @@ def _extract_metadata_filters(query: str) -> dict:
             return {"client_name": client}
     return {}
 
+def _query_terms(query: str) -> set:
+    stopwords = {
+        "the", "and", "for", "with", "that", "this", "have", "has", "done", "what",
+        "all", "can", "you", "our", "are", "was", "were", "from", "into", "ppt",
+        "deck", "slides", "presentation", "generate", "create", "make", "build",
+    }
+    return {
+        term for term in re.findall(r"[a-zA-Z0-9]{3,}", query.lower())
+        if term not in stopwords
+    }
+
+def _doc_relevance_score(doc: dict, query_terms: set, client_filter: str = "") -> float:
+    metadata = doc.get("metadata", {})
+    haystack = " ".join([
+        str(metadata.get("source", "")),
+        str(metadata.get("client_name", "")),
+        str(metadata.get("topic", "")),
+        str(metadata.get("summary", "")),
+        str(metadata.get("business_objective", "")),
+        str(metadata.get("approach", "")),
+        str(metadata.get("key_outcome", "")),
+        str(doc.get("content", ""))[:1200],
+    ]).lower()
+
+    score = 0.0
+    for term in query_terms:
+        if term in haystack:
+            score += 1.0
+
+    if client_filter:
+        doc_client = str(metadata.get("client_name", "")).lower()
+        doc_source = str(metadata.get("source", "")).lower()
+        if client_filter in doc_client or client_filter in doc_source:
+            score += 6.0
+
+    if metadata.get("summary"):
+        score += 0.5
+    if metadata.get("key_outcome") and metadata.get("key_outcome") != "Not extracted":
+        score += 0.8
+    if metadata.get("business_objective") and metadata.get("business_objective") != "Not extracted":
+        score += 0.6
+
+    return score
+
+def _trim_content(content: str, max_chars: int = 850) -> str:
+    content = re.sub(r"\s+", " ", content or "").strip()
+    if len(content) <= max_chars:
+        return content
+    return content[:max_chars].rsplit(" ", 1)[0] + "..."
+
+def _format_doc_context(docs: List[dict]) -> str:
+    packets = []
+    for i, d in enumerate(docs):
+        meta = d.get("metadata", {})
+        poc = resolve_poc(meta.get("pocs", "Unknown"), meta.get("topic", ""), meta.get("client_name", ""))
+        packets.append(
+            f"[Doc {i+1}]\n"
+            f"Source: {meta.get('source', 'Unknown')}\n"
+            f"Client: {meta.get('client_name', 'N/A')}\n"
+            f"Topic: {meta.get('topic', 'N/A')}\n"
+            f"Brand: {meta.get('brand', 'N/A')}\n"
+            f"POC: {poc}\n"
+            f"Business Objective: {meta.get('business_objective', 'N/A')}\n"
+            f"Approach: {meta.get('approach', 'N/A')}\n"
+            f"Datasets Used: {meta.get('datasets_used', 'N/A')}\n"
+            f"Key Outcome: {meta.get('key_outcome', 'N/A')}\n"
+            f"Evidence Snippet: {_trim_content(d.get('content', ''), 850)}"
+        )
+    return "\n\n".join(packets)
+
 def orchestrator_node(state: AgentState):
     """AGENT 1: The Business Analyst Orchestrator. Analyzes the query and extracts metadata entities."""
     filters = _extract_metadata_filters(state["query"])
@@ -124,6 +194,7 @@ def retriever_node(state: AgentState):
         # Extract metadata terms from Orchestrator
         metadata_filters = state.get("metadata_filters", {})
         client_filter = metadata_filters.get("client_name", "").lower()
+        query_terms = _query_terms(search_query)
         
         # 1. Fetch a broad pool — large k to ensure we surface chunks from many unique files
         print(f"Fetching candidate matches for query: '{search_query}'...")
@@ -135,17 +206,24 @@ def retriever_node(state: AgentState):
         for doc in candidate_docs:
             doc_client = doc.metadata.get("client_name", "").lower() if doc.metadata.get("client_name") else ""
             doc_source = doc.metadata.get("source", "").lower() if doc.metadata.get("source") else ""
+            doc_payload = {"content": doc.page_content, "metadata": doc.metadata}
+            doc_payload["metadata"]["relevance_score"] = _doc_relevance_score(doc_payload, query_terms, client_filter)
             
             if client_filter and (client_filter in doc_client or client_filter in doc_source):
-                boosted_docs.append({"content": doc.page_content, "metadata": doc.metadata})
+                boosted_docs.append(doc_payload)
             else:
-                other_docs.append({"content": doc.page_content, "metadata": doc.metadata})
+                other_docs.append(doc_payload)
         
         # 2. Deduplicate: Keep ONE best chunk per unique source file for diversity
         def deduplicate_by_source(doc_list, max_results=8):
             seen_sources = set()
             unique_docs = []
-            for doc in doc_list:
+            ranked_docs = sorted(
+                doc_list,
+                key=lambda doc: doc.get("metadata", {}).get("relevance_score", 0),
+                reverse=True,
+            )
+            for doc in ranked_docs:
                 src = doc.get("metadata", {}).get("source", "unknown")
                 if src not in seen_sources:
                     seen_sources.add(src)
@@ -160,7 +238,7 @@ def retriever_node(state: AgentState):
         
         # For client queries: use all unique client docs; for general: top 5 diverse results
         if client_filter and unique_boosted:
-            final_docs = unique_boosted  # All unique files from that client folder
+            final_docs = unique_boosted[:6]  # Keep the best unique files from that client folder
         else:
             final_docs = (unique_boosted + unique_other)[:5]
         
@@ -277,12 +355,71 @@ Answer:"""
         print(f"Generation Error: {e}")
         return {"final_answer": "An error occurred while generating the answer."}
 
+def generator_node_v2(state: AgentState):
+    """Generates concise, evidence-grounded answers from ranked context packets."""
+    if state.get("final_answer"):
+        return state
+
+    try:
+        llm = get_llm()
+        docs = state.get("retrieved_docs", [])
+
+        if not docs:
+            return {"final_answer": "I couldn't find any relevant documents in the knowledge base."}
+
+        context = _format_doc_context(docs)
+        history_str = "\n".join([f"{msg['role']}: {msg['content']}" for msg in state.get("chat_history", [])[-4:]])
+        strategy_note = ""
+        if state.get("retrieval_strategy") == "hybrid_boosted":
+            strategy_note = "The retrieved context was boosted for the detected client/brand."
+
+        prompt = f"""You are BLITZ, Chryselys' enterprise knowledge assistant for sales enablement.
+Answer the user's question using ONLY the Retrieved Knowledge Base Context.
+
+QUALITY RULES:
+1. Be direct and specific. Do not start with generic phrases like "The retrieved documents provide".
+2. If the user asks about a client, lead with what Chryselys did for that client and the concrete deliverables/outcomes.
+3. If the user asks for capabilities, group the answer by capability area and connect each area to evidence.
+4. Every factual claim about work performed, deliverables, datasets, outcomes, or POCs must cite one or more docs like [Doc 1].
+5. Do not invent facts. If a field is missing, say "not specified in the indexed material" instead of guessing.
+6. Prefer concise bullets over long paragraphs. Keep the answer useful for a sales/delivery user.
+7. Include POCs when present, formatted as **POC:** Name.
+8. End with a short "Sources referenced" list containing filename, client, and POC.
+
+RESPONSE SHAPE:
+- Start with a 2-3 sentence direct answer.
+- Then provide 3-6 bullets or grouped sections depending on the query.
+- For client/capability questions, include deliverables, approach, datasets/tools, outcomes, and POCs when available.
+- End with "Sources referenced:".
+
+{strategy_note}
+
+Conversation Summary: {state.get("summary", "None")}
+Recent History:
+{history_str}
+
+User Uploaded SOW/Email Context:
+{str(state.get("context_text", "None"))[:1800]}
+
+Retrieved Knowledge Base Context ({len(docs)} documents):
+{context}
+
+Current Query: {state["query"]}
+
+Answer:"""
+
+        answer = llm.invoke(prompt).content
+        return {"final_answer": answer}
+    except Exception as e:
+        print(f"Generation Error: {e}")
+        return {"final_answer": "An error occurred while generating the answer."}
+
 def build_graph():
     workflow = StateGraph(AgentState)
     workflow.add_node("orchestrator", orchestrator_node)
     workflow.add_node("retriever", retriever_node)
     workflow.add_node("fallback", fallback_node)
-    workflow.add_node("generator", generator_node)
+    workflow.add_node("generator", generator_node_v2)
     
     workflow.set_entry_point("orchestrator")
     workflow.add_edge("orchestrator", "retriever")
