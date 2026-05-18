@@ -44,6 +44,7 @@
   --color-gold: oklch(0.72 0.12 85);
   --color-gold-soft: oklch(0.80 0.09 88);
   --color-gold-deep: oklch(0.55 0.14 75);
+  --color-teal: oklch(0.62 0.10 200);
   --color-warm: oklch(0.20 0.02 80);
   --color-sidebar: oklch(0.97 0.01 88);
   --color-sidebar-foreground: oklch(0.22 0.02 80);
@@ -180,6 +181,13 @@
     box-shadow: 0 4px 24px oklch(0.68 0.14 80 / 0.25);
   }
 
+  .shadow-elegant {
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.85) inset,
+      0 18px 50px oklch(0.22 0.03 80 / 0.08),
+      0 4px 14px oklch(0.68 0.14 80 / 0.08);
+  }
+
   /* Gold glow on hover */
   .hover\:shadow-glow:hover {
     box-shadow: 0 0 0 1px oklch(0.68 0.14 80 / 0.30),
@@ -204,11 +212,30 @@
   .text-gold-soft {
     color: oklch(0.76 0.10 85);
   }
+
+  .hairline {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.68 0.14 80 / 0.45),
+      transparent
+    );
+  }
+
+  .animate-float {
+    animation: float 7s ease-in-out infinite;
+  }
 }
 
 @keyframes pulse-gold {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 oklch(0.68 0.14 80 / 0.4); }
   50% { opacity: 0.8; box-shadow: 0 0 0 4px oklch(0.68 0.14 80 / 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 /* ─── Scrollbar — light gold theme ─── */

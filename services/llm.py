@@ -1,9 +1,11 @@
 import os
 import json
+from functools import lru_cache
 from langchain_aws import ChatBedrock, BedrockEmbeddings
 from langchain_core.prompts import PromptTemplate
 from typing import Dict, Any
 
+@lru_cache(maxsize=1)
 def get_llm():
     return ChatBedrock(
         model_id="anthropic.claude-3-haiku-20240307-v1:0", 
@@ -11,6 +13,7 @@ def get_llm():
         region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1")
     )
 
+@lru_cache(maxsize=1)
 def get_embeddings():
     return BedrockEmbeddings(
         model_id="amazon.titan-embed-text-v2:0",

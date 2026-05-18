@@ -1,5 +1,6 @@
 import os
 import time
+from functools import lru_cache
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from services.llm import get_embeddings
@@ -8,6 +9,7 @@ from typing import List
 
 INDEX_NAME = "knowledge-engine-index"
 
+@lru_cache(maxsize=1)
 def init_pinecone():
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     if INDEX_NAME not in pc.list_indexes().names():
@@ -22,6 +24,7 @@ def init_pinecone():
         )
     return pc
 
+@lru_cache(maxsize=8)
 def get_vectorstore(namespace: str = "default"):
     # Ensure index exists
     init_pinecone()

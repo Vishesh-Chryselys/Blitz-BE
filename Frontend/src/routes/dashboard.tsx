@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Home, Sparkles, Upload, ChevronDown, Activity, Bell, Plus, Search, ArrowRight
@@ -26,26 +26,21 @@ function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Onboarding state
-  const [userName, setUserName] = useState(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem("chryselys_name") || "";
-    }
-    return "";
-  });
-  const [userChryselysId, setUserChryselysId] = useState(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem("chryselys_id") || "";
-    }
-    return "";
-  });
-  const [showOnboarding, setShowOnboarding] = useState(() => {
+  const [userName, setUserName] = useState("");
+  const [userChryselysId, setUserChryselysId] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
     if (typeof window !== "undefined" && window.localStorage) {
       const name = localStorage.getItem("chryselys_name");
       const cid = localStorage.getItem("chryselys_id");
-      return !name || !cid;
+      setUserName(name || "");
+      setUserChryselysId(cid || "");
+      setShowOnboarding(!name || !cid);
     }
-    return true;
-  });
+  }, []);
   
   const [nameInput, setNameInput] = useState("");
   const [idInput, setIdInput] = useState("");
@@ -157,7 +152,7 @@ function DashboardLayout() {
       </div>
 
       {/* Onboarding Modal Overlay */}
-      {showOnboarding && (
+      {isMounted && showOnboarding && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}

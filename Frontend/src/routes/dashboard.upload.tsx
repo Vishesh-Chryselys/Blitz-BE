@@ -33,6 +33,7 @@ function UploadPage() {
   const [isConnectingSp, setIsConnectingSp] = useState(false);
   const [spStatus, setSpStatus] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [spConnected, setSpConnected] = useState(false);
+  const [, setActiveIngestions] = useState<{ name: string; type: string; stage: string; progress: number; files: number }[]>([]);
 
   const [indexedFiles, setIndexedFiles] = useState<IndexedFile[]>([]);
   const [isFetchingFiles, setIsFetchingFiles] = useState(false);
@@ -94,8 +95,10 @@ function UploadPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setSpConnected(true);
-      localStorage.setItem("connected_sharepoint_url", spUrl);
-      localStorage.setItem("connected_sharepoint_library", spLibrary);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("connected_sharepoint_url", spUrl);
+        window.localStorage.setItem("connected_sharepoint_library", spLibrary);
+      }
       setSpStatus({ 
         type: "success", 
         message: "MS SharePoint Handshake complete! Connected successfully under secure tenant ID 'chryselys-prod-9a7'. Connected to library: 'Proposals'." 

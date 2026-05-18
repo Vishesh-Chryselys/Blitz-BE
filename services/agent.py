@@ -5,6 +5,7 @@ from services.vectorstore import get_vectorstore
 from services.poc_lookup import resolve_poc
 import json
 import os
+import re
 
 class AgentState(TypedDict):
     query: str
@@ -30,8 +31,60 @@ def get_session_data(session_id: str):
 def save_session_data(session_id: str, history: List[dict], summary: str):
     SESSION_STORE[session_id] = {"chat_history": history, "summary": summary}
 
+def _normalize_lookup_text(value: str) -> str:
+    value = re.sub(r"\([^)]*\)", " ", value.lower())
+    value = re.sub(r"\bclient\b|\bus\b|\buk\b|\beu\b", " ", value)
+    return re.sub(r"[^a-z0-9]+", " ", value).strip()
+
+def _load_client_candidates() -> Dict[str, str]:
+    """Builds cheap client-name match candidates from the local ingestion manifest."""
+    manifest_path = os.path.join(os.getcwd(), "indexed_files.json")
+    candidates = {}
+    if not os.path.exists(manifest_path):
+        return candidates
+
+    try:
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+    except Exception as e:
+        print(f"Client candidate load failed: {e}")
+        return candidates
+
+    for entry in manifest.values():
+        client = entry.get("client")
+        if not client:
+            continue
+        normalized = _normalize_lookup_text(client)
+        if normalized:
+            candidates[normalized] = client
+        for part in re.split(r"[-_/]", client):
+            normalized_part = _normalize_lookup_text(part)
+            if len(normalized_part) >= 3:
+                candidates[normalized_part] = client
+
+    return candidates
+
+def _extract_metadata_filters(query: str) -> dict:
+    """Fast path for client filters without paying for an orchestrator LLM call."""
+    normalized_query = f" {_normalize_lookup_text(query)} "
+    for candidate, client in sorted(_load_client_candidates().items(), key=lambda item: len(item[0]), reverse=True):
+        if f" {candidate} " in normalized_query:
+            return {"client_name": client}
+    return {}
+
 def orchestrator_node(state: AgentState):
     """AGENT 1: The Business Analyst Orchestrator. Analyzes the query and extracts metadata entities."""
+    filters = _extract_metadata_filters(state["query"])
+    if filters:
+        print(f"Orchestrator fast-path metadata filters: {filters}")
+        return {"metadata_filters": filters}
+
+    # Most questions do not need a separate LLM classification step. Skipping it
+    # keeps normal RAG turns to retrieval + final generation.
+    return {"metadata_filters": {}}
+
+def llm_orchestrator_node(state: AgentState):
+    """Optional LLM fallback for metadata extraction if stricter routing is needed later."""
     try:
         llm = get_llm()
         prompt = f"""You are the Lead Business Analyst Orchestrator. 

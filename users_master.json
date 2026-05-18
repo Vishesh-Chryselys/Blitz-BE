@@ -22,5 +22,11 @@
         "first_seen": "2026-05-17T18:08:00Z",
         "pinecone_namespace": "session_C1225",
         "last_query": "what do you know about stemline"
+    },
+    "1235": {
+        "user_id": "1235",
+        "first_seen": "2026-05-17T18:08:00Z",
+        "pinecone_namespace": "session_1235",
+        "last_query": "What are the deliverables we have done with gilliad"
     }
 }

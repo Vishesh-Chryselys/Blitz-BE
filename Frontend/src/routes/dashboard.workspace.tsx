@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
-  Sparkles, Send, FileText, ArrowRight, ShieldCheck, Zap, Paperclip, Loader2, X, Clock, HelpCircle, Folder
+  Sparkles, Send, FileText, ArrowRight, ShieldCheck, Zap, Paperclip, Loader2, X, Clock, HelpCircle, Folder, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { chat, chatWithFile, generatePPT } from "../lib/api";
+import { chat, chatWithFile, generatePPT, type ChatAction, type DocumentReference } from "../lib/api";
 
 export const Route = createFileRoute("/dashboard/workspace")({
   component: Workspace,
@@ -23,17 +23,50 @@ type Msg = {
     tags: string[];
     summary: string;
   }[];
+  references?: DocumentReference[];
+  deck?: {
+    title: string;
+    url: string;
+    sourceCount: number;
+  };
   isError?: boolean;
 };
 
+const isPptGenerationPrompt = (text: string) => {
+  const normalized = text.toLowerCase();
+  const asksForDeck = /\b(ppt|powerpoint|presentation|slide deck|deck|slides)\b/.test(normalized);
+  const asksToCreate = /\b(generate|create|make|build|prepare|compile|draft)\b/.test(normalized);
+  return asksForDeck && asksToCreate;
+};
+
+const deckTopicFromPrompt = (text: string) => {
+  const cleaned = text
+    .replace(/\b(generate|create|make|build|prepare|compile|draft)\b/gi, "")
+    .replace(/\b(a|an|the)?\s*(ppt|powerpoint|presentation|slide deck|deck|slides)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return (cleaned || text || "AI Synthesis").substring(0, 42);
+};
+
+const canUseBrowserStorage = () => typeof window !== "undefined";
+
+const getLocalItem = (key: string) => canUseBrowserStorage() ? window.localStorage.getItem(key) : null;
+const setLocalItem = (key: string, value: string) => {
+  if (canUseBrowserStorage()) window.localStorage.setItem(key, value);
+};
+const getSessionItem = (key: string) => canUseBrowserStorage() ? window.sessionStorage.getItem(key) : null;
+const setSessionItem = (key: string, value: string) => {
+  if (canUseBrowserStorage()) window.sessionStorage.setItem(key, value);
+};
+
 function Workspace() {
-  const userName = typeof window !== "undefined" && window.localStorage ? localStorage.getItem("chryselys_name") || "Marcus" : "Marcus";
-  const userChryselysId = typeof window !== "undefined" && window.localStorage ? localStorage.getItem("chryselys_id") || "default" : "default";
+  const userName = getLocalItem("chryselys_name") || "Marcus";
+  const userChryselysId = getLocalItem("chryselys_id") || "default";
 
   // Initial welcome message (Warm, business-friendly greeting) - Now persisted via sessionStorage
   const [msgs, setMsgs] = useState<Msg[]>(() => {
     try {
-      const stored = sessionStorage.getItem(`chryselys_chat_${userChryselysId}`);
+      const stored = getSessionItem(`chryselys_chat_${userChryselysId}`);
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error("Failed to parse stored chat:", e);
@@ -48,7 +81,7 @@ function Workspace() {
   });
 
   useEffect(() => {
-    sessionStorage.setItem(`chryselys_chat_${userChryselysId}`, JSON.stringify(msgs));
+    setSessionItem(`chryselys_chat_${userChryselysId}`, JSON.stringify(msgs));
   }, [msgs, userChryselysId]);
 
   const [input, setInput] = useState("");
@@ -62,7 +95,7 @@ function Workspace() {
   // Dynamic user-specific conversation history list from localStorage
   const [history, setHistory] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem(`chryselys_history_${userChryselysId}`);
+      const stored = getLocalItem(`chryselys_history_${userChryselysId}`);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -123,6 +156,28 @@ function Workspace() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const buildDeckPreview = async (topic: string, content: string, references: DocumentReference[] = [], userQuery?: string) => {
+    const blob = await generatePPT(topic, content, references, userQuery);
+    const url = window.URL.createObjectURL(blob);
+    return { title: topic, url, sourceCount: references.length };
+  };
+
+  const downloadDeck = (deck: { title: string; url: string }) => {
+    const a = document.createElement("a");
+    a.href = deck.url;
+    a.download = `${deck.title.replace(/[^a-zA-Z0-9]/g, "_")}.pptx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const resolvePptAction = (actions: ChatAction[] | undefined, text: string) => {
+    const backendAction = actions?.find((action) => action.type === "generate_ppt");
+    if (backendAction) return backendAction;
+    if (!isPptGenerationPrompt(text)) return null;
+    return { type: "generate_ppt", topic: deckTopicFromPrompt(text), label: "Generate PowerPoint" };
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text && !selectedFile) return;
@@ -135,7 +190,7 @@ function Workspace() {
     if (text) {
       setHistory(prev => {
         const next = [text, ...prev.filter(item => item !== text)].slice(0, 10);
-        localStorage.setItem(`chryselys_history_${userChryselysId}`, JSON.stringify(next));
+        setLocalItem(`chryselys_history_${userChryselysId}`, JSON.stringify(next));
         return next;
       });
     }
@@ -169,12 +224,43 @@ function Workspace() {
         role: "ai",
         content: res.answer,
         confidence: calculatedConfidence, // Prominently displayed ONLY after prompt completes
-        cards: mappedCards
+        cards: mappedCards,
+        references: res.references || [],
       };
 
       setMsgs((prev) => [...prev, newAiMsg]);
       // Automatically target this new response in the sidebar metadata inspector!
       setInspectedMsgIndex(aiMsgIndex);
+
+      const pptAction = resolvePptAction(res.actions, text);
+      if (pptAction) {
+        setIsGeneratingPPT(true);
+        const deckTopic = pptAction.topic || deckTopicFromPrompt(text);
+        try {
+          const deck = await buildDeckPreview(deckTopic, newAiMsg.content, newAiMsg.references || [], text);
+          setMsgs((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              content: `Deck ready: "${deckTopic}". I used the RAG answer and ${deck.sourceCount} cited source${deck.sourceCount === 1 ? "" : "s"}.`,
+              cards: [],
+              deck,
+            },
+          ]);
+        } catch (pptErr: any) {
+          console.error(pptErr);
+          setMsgs((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              content: `I found the relevant information, but PowerPoint generation failed: ${pptErr.message}`,
+              isError: true,
+            },
+          ]);
+        } finally {
+          setIsGeneratingPPT(false);
+        }
+      }
     } catch (err: any) {
       console.error(err);
       setMsgs((prev) => [
@@ -205,16 +291,9 @@ function Workspace() {
     setIsGeneratingPPT(true);
     try {
       const topic = msgs.filter(m => m.role === "user").pop()?.content.substring(0, 30) || "AI Synthesis";
-      const blob = await generatePPT(topic, activeMsg.content);
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${topic.replace(/[^a-zA-Z0-9]/g, "_")}.pptx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const userQuery = msgs.filter(m => m.role === "user").pop()?.content;
+      const deck = await buildDeckPreview(topic, activeMsg.content, activeMsg.references || [], userQuery);
+      downloadDeck(deck);
     } catch (err: any) {
       console.error(err);
       alert("Failed to generate PowerPoint presentation: " + err.message);
@@ -264,8 +343,8 @@ function Workspace() {
       if (card) {
         const isSharePoint = card.title.toLowerCase().includes("sharepoint") || card.title.toLowerCase().includes("sites");
         // Read dynamically connected SharePoint details from localStorage with window guards for SSR
-        const savedSpUrl = typeof window !== "undefined" ? localStorage.getItem("connected_sharepoint_url") : null;
-        const savedSpLibrary = typeof window !== "undefined" ? (localStorage.getItem("connected_sharepoint_library") || "Proposals") : "Proposals";
+        const savedSpUrl = getLocalItem("connected_sharepoint_url");
+        const savedSpLibrary = getLocalItem("connected_sharepoint_library") || "Proposals";
         const spBase = savedSpUrl ? `${savedSpUrl}/${savedSpLibrary}` : "https://chryselys.sharepoint.com/sites/SalesEnablement/Proposals";
 
         // Local folder opens standard workspace directory; SharePoint opens dynamic OneDrive SharePoint portal
@@ -366,6 +445,29 @@ function Workspace() {
                       <div className="text-warm space-y-2 whitespace-pre-line leading-relaxed font-display font-light">
                         {renderContentWithLinks(m.content, m.cards || [])}
                       </div>
+
+                      {m.deck && (
+                        <div className="mt-4 rounded-xl border border-gold/30 bg-gold/10 p-3 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="size-9 rounded-lg bg-gradient-gold flex items-center justify-center shrink-0 shadow-gold">
+                              <FileText className="size-4 text-primary-foreground" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[10px] uppercase tracking-widest text-gold font-bold">PowerPoint Deck</div>
+                              <div className="text-xs text-warm font-semibold truncate">{m.deck.title}</div>
+                              <div className="text-[10px] text-foreground/55">{m.deck.sourceCount} cited source{m.deck.sourceCount === 1 ? "" : "s"} included</div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="hero"
+                            size="sm"
+                            className="shrink-0 h-8"
+                            onClick={() => m.deck && downloadDeck(m.deck)}
+                          >
+                            <Download className="size-3.5" /> Download
+                          </Button>
+                        </div>
+                      )}
 
                       {/* Clean Inspect Metadata link */}
                       <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-end">

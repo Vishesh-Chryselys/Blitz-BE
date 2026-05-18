@@ -10,7 +10,9 @@ export const Route = createFileRoute("/dashboard/")({
 });
 
 function DashboardHome() {
-  const userName = localStorage.getItem("chryselys_name") || "Marcus";
+  const userName = typeof window !== "undefined"
+    ? window.localStorage.getItem("chryselys_name") || "Marcus"
+    : "Marcus";
 
   const CAPABILITIES = [
     {
