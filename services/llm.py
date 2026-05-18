@@ -7,9 +7,19 @@ from typing import Dict, Any
 
 @lru_cache(maxsize=1)
 def get_llm():
+    """Cheap, fast model used for ingestion metadata extraction, history summarization, and query rewrites."""
     return ChatBedrock(
-        model_id="anthropic.claude-3-haiku-20240307-v1:0", 
+        model_id=os.getenv("BEDROCK_UTILITY_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0"),
         model_kwargs={"temperature": 0.1},
+        region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+    )
+
+@lru_cache(maxsize=1)
+def get_generator_llm():
+    """High-quality model used only for the final answer generation in the chat agent."""
+    return ChatBedrock(
+        model_id=os.getenv("BEDROCK_GENERATOR_MODEL_ID", "us.anthropic.claude-sonnet-4-20250514-v1:0"),
+        model_kwargs={"temperature": 0.2, "max_tokens": 2000},
         region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1")
     )
 

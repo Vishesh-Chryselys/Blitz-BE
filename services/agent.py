@@ -1,6 +1,7 @@
 from typing import TypedDict, List, Dict, Optional
 from langgraph.graph import StateGraph, END
-from services.llm import get_llm
+from services.llm import get_llm, get_generator_llm
+from services.reranker import rerank_documents
 from services.vectorstore import get_vectorstore
 from services.poc_lookup import resolve_poc
 import json
@@ -184,69 +185,73 @@ Query: {state['query']}
         print(f"Orchestrator extraction failed: {e}")
         return {"metadata_filters": {}}
 
+def _cap_chunks_per_source(docs: List[dict], max_per_source: int = 3, total_cap: int = 8) -> List[dict]:
+    """Keep order intact but enforce at most `max_per_source` chunks per source file."""
+    per_source: Dict[str, int] = {}
+    capped: List[dict] = []
+    for doc in docs:
+        src = doc.get("metadata", {}).get("source", "unknown")
+        if per_source.get(src, 0) >= max_per_source:
+            continue
+        per_source[src] = per_source.get(src, 0) + 1
+        capped.append(doc)
+        if len(capped) >= total_cap:
+            break
+    return capped
+
+
 def retriever_node(state: AgentState):
-    """AGENT 2: The Knowledge Librarian. Hybrid retrieval with source-file diversity."""
+    """AGENT 2: The Knowledge Librarian. Pinecone recall + Bedrock rerank, client-boosted, multi-chunk."""
     try:
         search_query = state["query"]
-        # Always search the shared knowledge base namespace — matches ingestion target
         shared_store = get_vectorstore(namespace="knowledge_base")
-        
-        # Extract metadata terms from Orchestrator
+
         metadata_filters = state.get("metadata_filters", {})
         client_filter = metadata_filters.get("client_name", "").lower()
         query_terms = _query_terms(search_query)
-        
-        # 1. Fetch a broad pool — large k to ensure we surface chunks from many unique files
+
+        # 1. Broad recall from Pinecone
         print(f"Fetching candidate matches for query: '{search_query}'...")
         candidate_docs = shared_store.similarity_search(search_query, k=30)
-        
-        boosted_docs = []
-        other_docs = []
-        
+
+        payloads: List[dict] = []
         for doc in candidate_docs:
-            doc_client = doc.metadata.get("client_name", "").lower() if doc.metadata.get("client_name") else ""
-            doc_source = doc.metadata.get("source", "").lower() if doc.metadata.get("source") else ""
-            doc_payload = {"content": doc.page_content, "metadata": doc.metadata}
-            doc_payload["metadata"]["relevance_score"] = _doc_relevance_score(doc_payload, query_terms, client_filter)
-            
-            if client_filter and (client_filter in doc_client or client_filter in doc_source):
-                boosted_docs.append(doc_payload)
-            else:
-                other_docs.append(doc_payload)
-        
-        # 2. Deduplicate: Keep ONE best chunk per unique source file for diversity
-        def deduplicate_by_source(doc_list, max_results=8):
-            seen_sources = set()
-            unique_docs = []
-            ranked_docs = sorted(
-                doc_list,
-                key=lambda doc: doc.get("metadata", {}).get("relevance_score", 0),
-                reverse=True,
-            )
-            for doc in ranked_docs:
-                src = doc.get("metadata", {}).get("source", "unknown")
-                if src not in seen_sources:
-                    seen_sources.add(src)
-                    unique_docs.append(doc)
-                if len(unique_docs) >= max_results:
-                    break
-            return unique_docs
-        
-        # Deduplicate each pool, then merge (client-boosted first)
-        unique_boosted = deduplicate_by_source(boosted_docs, max_results=8)
-        unique_other = deduplicate_by_source(other_docs, max_results=5)
-        
-        # For client queries: use all unique client docs; for general: top 5 diverse results
-        if client_filter and unique_boosted:
-            final_docs = unique_boosted[:6]  # Keep the best unique files from that client folder
+            payload = {"content": doc.page_content, "metadata": dict(doc.metadata or {})}
+            payload["metadata"]["relevance_score"] = _doc_relevance_score(payload, query_terms, client_filter)
+            payloads.append(payload)
+
+        # 2. Bedrock rerank against the original query — supersedes the keyword heuristic for ordering
+        reranked = rerank_documents(search_query, payloads, top_n=15)
+
+        # 3. Client boost: if the orchestrator detected a client, float its docs to the top while
+        #    preserving rerank order within each group.
+        if client_filter:
+            boosted, other = [], []
+            for doc in reranked:
+                meta = doc.get("metadata", {})
+                doc_client = str(meta.get("client_name", "")).lower()
+                doc_source = str(meta.get("source", "")).lower()
+                if client_filter in doc_client or client_filter in doc_source:
+                    boosted.append(doc)
+                else:
+                    other.append(doc)
+            ordered = boosted + other
+            strategy = "hybrid_boosted" if boosted else "rerank_only"
         else:
-            final_docs = (unique_boosted + unique_other)[:5]
-        
-        strategy = "hybrid_boosted" if boosted_docs else "pure_semantic"
-        print(f"Hybrid Retriever: {len(final_docs)} unique-source docs using {strategy} (from {len(candidate_docs)} candidates)")
-        
+            ordered = reranked
+            strategy = "rerank_only"
+
+        # 4. Allow up to 3 chunks per source file, hard cap at 8 docs sent to the generator
+        final_docs = _cap_chunks_per_source(ordered, max_per_source=3, total_cap=8)
+
+        print(
+            f"Retriever: {len(final_docs)} chunks across "
+            f"{len({d.get('metadata', {}).get('source') for d in final_docs})} files "
+            f"using {strategy} (from {len(candidate_docs)} candidates)"
+        )
+
         return {"retrieved_docs": final_docs, "retrieval_strategy": strategy}
-        
+
     except Exception as e:
         print(f"Retrieval Error: {e}")
         return {"retrieved_docs": []}
@@ -361,7 +366,7 @@ def generator_node_v2(state: AgentState):
         return state
 
     try:
-        llm = get_llm()
+        llm = get_generator_llm()
         docs = state.get("retrieved_docs", [])
 
         if not docs:
